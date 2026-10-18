@@ -1,5 +1,22 @@
 # MOOSA - Android APK build (GitHub Actions, free for public repos)
 # Manual trigger only: Actions tab -> "Build MOOSA Android APK" -> Run workflow
+#
+# CORRECTED 2026-10-18 after checking this workflow against PocketPal's own
+# upstream CI (.github/workflows/ci.yml in the source tree). The first version
+# would have failed or produced nothing to download:
+#  1. android/app/build.gradle applies the google-services plugin, but the repo
+#     ships NO google-services.json -> upstream CI creates a dummy one. Added.
+#  2. The app has product flavors (prod / e2e), so a plain `assembleDebug`
+#     does not match the real output path. Task is now assembleProdDebug and
+#     the artifact path is android/app/build/outputs/apk/prod/debug/*.apk.
+#  3. Upstream CI creates a dummy .env (app config / signing read it). Added.
+#  4. llama.rn is built from source in upstream CI: the env flag
+#     ORG_GRADLE_PROJECT_rnllamaBuildFromSource=true, the rnllamaVariants
+#     allowlist derived by scripts/verify-android-payload.js, the Hexagon SDK
+#     setup action shipped in the repo, and a maximise-disk-space step are
+#     all parts of that path. Mirrored here.
+#  5. Node is pinned to 22.21.0 and Yarn 1 is installed the way upstream CI
+#     does (package.json declares packageManager yarn@1.22.22).
 name: Build MOOSA Android APK
 on:
   workflow_dispatch:
@@ -54,7 +71,7 @@ jobs:
               "client_info": {
                 "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
                 "android_client_info": {
-                  "package_name": "com.pocketpalai"
+                  "package_name": "ai.moosa.app"
                 }
               },
               "api_key": [{
