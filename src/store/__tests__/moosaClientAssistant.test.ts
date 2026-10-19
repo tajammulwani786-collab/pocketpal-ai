@@ -9,6 +9,7 @@ import {
   draftClientReply,
   qualityCheckDraft,
   runClientWorkflow,
+  explainBriefInRomanUrdu,
 } from '../moosaClientAssistant';
 
 describe('analyzeClientMessage', () => {
@@ -97,5 +98,25 @@ describe('runClientWorkflow', () => {
     expect(r.plan.phases).toHaveLength(4);
     expect(r.plan.phases[3].name).toMatch(/Deliver/);
     expect(r.quality.warnings).toEqual([]);
+  });
+});
+
+describe('explainBriefInRomanUrdu', () => {
+  it('explains a full brief using only client-stated facts', () => {
+    const b = analyzeClientMessage(
+      'Hi, I need 30 Instagram captions for my clothing store. Please deliver within 3 days. My budget is $40.',
+    );
+    const urdu = explainBriefInRomanUrdu(b);
+    expect(urdu).toContain('captions');
+    expect(urdu).toContain('30');
+    expect(urdu).toContain('$40');
+    expect(urdu).toMatch(/nahi bhejta/);
+  });
+
+  it('says clearly when deadline and budget were not stated', () => {
+    const b = analyzeClientMessage('I need some captions for my page.');
+    const urdu = explainBriefInRomanUrdu(b);
+    expect(urdu).toMatch(/koi deadline nahi/);
+    expect(urdu).toMatch(/koi budget nahi/);
   });
 });
