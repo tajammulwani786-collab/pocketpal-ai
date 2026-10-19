@@ -943,6 +943,7 @@ class PalStore {
           parameters: {},
           parameterSchema: [],
           capabilities: {},
+          pact: {talents: mod.talents},
           color: mod.color,
           source: 'local',
           greeting: {
