@@ -84,6 +84,14 @@ export interface MoosaPalModule {
   greetingText: string;
   suggestedPrompts: string[];
   preferredTier: MoosaModelTierId;
+  /**
+   * Permission-based tool access (PACT). Only offline engines are ever
+   * granted here. Internet engines ('web_search', 'read_url') are NOT
+   * granted to any MOOSA module: they send data to external services
+   * and stay off unless the owner enables them personally in the
+   * app's own settings with their own provider key.
+   */
+  talents: {name: string; necessity: 'required' | 'optional'}[];
 }
 
 const MOOSA_MENTOR_PROMPT = `You are MOOSA, a personal AI assistant and mentor who lives on Tajamul's phone and works fully offline. You are NOT Gemini, ChatGPT or Claude. Never claim to be them, and never claim to have real-life human experience.
@@ -117,7 +125,14 @@ Rules:
 - Quality check: when he pastes a draft, check spelling, clarity and tone, explain the main problems briefly, then give the corrected version.
 - Write in simple professional English unless he asks otherwise. Explain your choices in Roman Urdu/Hinglish when that helps him learn.
 - Never promise sales, followers or income. Never copy another seller's text.
-Keep answers focused and ready to use.`;
+Keep answers focused and ready to use.
+
+WORKFLOW for every Fiverr task (follow in order):
+1. ANALYSE: restate the requirement, what is clear, what is missing.
+2. PLAN: list the deliverable parts and the order you will produce them.
+3. DRAFT: produce the work.
+4. QUALITY CHECK (before showing the final version): spelling and grammar; no invented facts, prices or reviews; tone matches the brand; hashtags max 5; a clear call to action where relevant; length fits the platform. Fix every problem you find.
+5. DELIVER: show the final version, then one short line: what you checked.`;
 
 const MOOSA_ENGLISH_PROMPT = `You are MOOSA English Teacher, a patient teacher for Tajamul, a student from India who is learning English for freelancing and business. You work fully offline on his phone.
 
@@ -157,6 +172,10 @@ export const MOOSA_PAL_MODULES: MoosaPalModule[] = [
       'Fiverr par pehla client kaise milega?',
     ],
     preferredTier: 'fast',
+    talents: [
+      {name: 'calculate', necessity: 'optional'},
+      {name: 'datetime', necessity: 'optional'},
+    ],
   },
   {
     key: 'business',
@@ -174,6 +193,10 @@ export const MOOSA_PAL_MODULES: MoosaPalModule[] = [
       'Quality-check my product description draft',
     ],
     preferredTier: 'balanced',
+    talents: [
+      {name: 'calculate', necessity: 'optional'},
+      {name: 'datetime', necessity: 'optional'},
+    ],
   },
   {
     key: 'english-teacher',
@@ -191,6 +214,7 @@ export const MOOSA_PAL_MODULES: MoosaPalModule[] = [
       'Give me today\'s English lesson',
     ],
     preferredTier: 'fast',
+    talents: [],
   },
   {
     key: 'trading-teacher',
@@ -208,5 +232,46 @@ export const MOOSA_PAL_MODULES: MoosaPalModule[] = [
       'Review my paper trade journal entry',
     ],
     preferredTier: 'fast',
+    talents: [{name: 'calculate', necessity: 'optional'}],
   },
 ];
+
+/**
+ * Business workflow definitions (foundation data). The Business module
+ * executes the Fiverr workflow today through its instructions; these
+ * structures are the contract that dedicated workflow engines will
+ * consume later. The Shopify workflow is analysis-only: the local
+ * model works from details/screenshots the owner provides and clearly
+ * labels anything it has not actually seen.
+ */
+export const MOOSA_BUSINESS_WORKFLOWS = [
+  {
+    id: 'fiverr-deliverable',
+    name: 'Fiverr deliverable (captions / descriptions / copy)',
+    steps: ['analyse', 'plan', 'draft', 'quality-check', 'deliver'],
+    qualityGates: [
+      'no invented facts, prices or reviews',
+      'spelling and grammar checked',
+      'hashtags <= 5',
+      'clear call to action where relevant',
+      'no copied text from other sellers',
+      'no income or results promises',
+    ],
+  },
+  {
+    id: 'shopify-store-analysis',
+    name: 'Shopify store analysis (from provided pages/screenshots)',
+    steps: [
+      'collect store details or screenshots from the owner',
+      'review header, navigation, product cards, images, buttons, footer',
+      'separate confirmed problems from possible improvements',
+      'prioritise fixes by impact',
+      'write the client-ready recommendation list',
+    ],
+    qualityGates: [
+      'never claim to have seen a page or section not actually provided',
+      'confirmed problems kept separate from suggestions',
+      'no copying of competitor branding, images or text',
+    ],
+  },
+] as const;
