@@ -152,3 +152,29 @@ internet is available.
   app (Moosa Business). Live platform work (Fiverr, Shopify, market
   data) is performed by the owner's assistant in chat, disclosed as
   such, until the app's own online tools are enabled and tested.
+
+## Portability, backup & sync (owner requirement, 2026-10-19)
+
+MOOSA is a portable, online-connected, local-first agent — not an app
+trapped on one phone.
+
+- **Source code** lives on GitHub (the owner's fork) with full version
+  history; project files stay accessible online.
+- **Phone** = interface, local GGUF inference, voice, vision and
+  device controls. The AI brain is ALWAYS a local open-weight model;
+  online services are never silently substituted as the reasoning
+  engine.
+- **Secure online storage** (future, owner-approved provider): client
+  project files, documents and APPROVED memory backups, with
+  synchronization so MOOSA can be restored on a new phone and can work
+  on authorized project files with the owner's permission.
+- **Memory backups must be encrypted before upload.** GitHub must
+  NEVER store passwords, API keys or unencrypted sensitive client
+  information — code and non-sensitive project files only.
+- **Restore path:** install MOOSA on a new device -> sign in ->
+  restore encrypted backup -> re-download the local GGUF model.
+- **Future devices:** Android first; the same architecture extends to
+  PC later (the local engine and data formats are portable by design).
+
+Status today: source on GitHub ✅; encrypted backup / cloud sync /
+restore-on-new-device = PLANNED (Stage 4/9 work), not yet built.
