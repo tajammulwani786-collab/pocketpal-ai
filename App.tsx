@@ -49,6 +49,7 @@ import {
   // Dev tools screen. Only available in debug mode.
   DevToolsScreen,
   ClientAssistantScreen,
+  MoosaHomeScreen,
 } from './src/screens';
 import PalsScreen from './src/screens/PalsScreen';
 import {OnboardingStack} from './src/screens/OnboardingScreens';
@@ -142,6 +143,14 @@ const App = observer(() => {
                           drawerContent={props => (
                             <SidebarContent {...props} />
                           )}>
+                          <Drawer.Screen
+                            name={ROUTES.MOOSA_HOME}
+                            component={gestureHandlerRootHOC(MoosaHomeScreen)}
+                            options={{
+                              headerStyle: styles.headerWithoutDivider,
+                              title: 'MOOSA',
+                            }}
+                          />
                           <Drawer.Screen
                             name={ROUTES.CHAT}
                             component={gestureHandlerRootHOC(ChatScreen)}
