@@ -48,6 +48,7 @@ import {
 
   // Dev tools screen. Only available in debug mode.
   DevToolsScreen,
+  ClientAssistantScreen,
 } from './src/screens';
 import PalsScreen from './src/screens/PalsScreen';
 import {OnboardingStack} from './src/screens/OnboardingScreens';
@@ -180,6 +181,14 @@ const App = observer(() => {
                             options={{
                               headerStyle: styles.headerWithoutDivider,
                               title: currentL10n.screenTitles.settings,
+                            }}
+                          />
+                          <Drawer.Screen
+                            name={ROUTES.CLIENT_ASSISTANT}
+                            component={gestureHandlerRootHOC(ClientAssistantScreen)}
+                            options={{
+                              headerStyle: styles.headerWithoutDivider,
+                              title: 'Client Assistant',
                             }}
                           />
                           <Drawer.Screen
