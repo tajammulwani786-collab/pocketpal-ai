@@ -18,6 +18,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {Card, Text, Button, TextInput} from 'react-native-paper';
 import Clipboard from '@react-native-clipboard/clipboard';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {useTheme} from '../../hooks';
 import {
   runClientWorkflow,
@@ -33,8 +35,16 @@ export const ClientAssistantScreen: React.FC = () => {
 
   const analyze = () => {
     if (!message.trim()) return;
-    setResult(runClientWorkflow(message));
+    const r = runClientWorkflow(message);
+    setResult(r);
     setCopiedNote('');
+    AsyncStorage.setItem(
+      'Moosa.lastMission',
+      JSON.stringify({
+        title: `Client Assistant — ${r.brief.service}: ${r.brief.summary.slice(0, 90)}`,
+        at: new Date().toISOString(),
+      }),
+    ).catch(() => {});
   };
 
   const copyText = (label: string, text: string) => {
