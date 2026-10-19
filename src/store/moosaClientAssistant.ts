@@ -347,6 +347,52 @@ export function qualityCheckDraft(
   return {passed, warnings};
 }
 
+const SERVICE_LABEL_URDU: Record<ClientService, string> = {
+  captions: 'social media captions',
+  'product-descriptions': 'product descriptions',
+  'seo-audit': 'apni website ka SEO audit',
+  shopify: 'apne Shopify store ka kaam',
+  'social-posts': 'social media posts',
+  general: '',
+};
+
+/**
+ * Explains the brief to the owner in simple Roman Urdu, using ONLY
+ * facts the client actually stated. This is the "MOOSA, mujhe batao
+ * client kya keh raha hai" step of the workflow.
+ */
+export function explainBriefInRomanUrdu(brief: ClientRequirementBrief): string {
+  const lines: string[] = [];
+  if (brief.service === 'general') {
+    lines.push('Client ne abhi wazeh tor par nahi bataya ke use exactly kya chahiye.');
+  } else {
+    lines.push(`Client ko ${SERVICE_LABEL_URDU[brief.service]} chahiye.`);
+  }
+  if (brief.quantity !== undefined) {
+    lines.push(`Total miqdaar: ${brief.quantity} ${brief.quantityUnit ?? ''}`.trim() + '.');
+  }
+  if (brief.platform) lines.push(`Platform: ${brief.platform}.`);
+  if (brief.url) lines.push(`Client ne ye link diya hai: ${brief.url}`);
+  if (brief.deadlineText) {
+    lines.push(`Deadline ke baare me client ke apne alfaaz: "${brief.deadlineText}".`);
+  } else {
+    lines.push('Client ne koi deadline nahi batayi.');
+  }
+  if (brief.budgetText) {
+    lines.push(`Budget ke baare me client ke apne alfaaz: "${brief.budgetText}". Is ke ilawa koi rate khud se mat likhna.`);
+  } else {
+    lines.push('Client ne koi budget nahi bataya.');
+  }
+  if (brief.missingInfo.length > 0) {
+    lines.push('Ye cheezen abhi confirm karni hain (ye sawal neeche wale reply draft me shamil kar diye hain):');
+    brief.missingInfo.forEach((q, i) => lines.push(`${i + 1}. ${q}`));
+  } else {
+    lines.push('Kaam shuru karne ke liye zaroori maloomat mukammal hain.');
+  }
+  lines.push('Neeche professional English reply ka draft tayyar hai. Bhejne se pehle khud parh kar approve karna — MOOSA khud kabhi message nahi bhejta.');
+  return lines.join('\n');
+}
+
 export function runClientWorkflow(
   message: string,
   ownerName: string = 'Tajamul',
