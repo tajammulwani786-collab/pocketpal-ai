@@ -559,6 +559,13 @@ export const SidebarContent: React.FC<DrawerContentComponentProps> = observer(
               testID="drawer-item-models"
             />
             <Drawer.Item
+              label="Client Assistant"
+              icon={() => <PalIcon stroke={theme.colors.primary} />}
+              onPress={() => props.navigation.navigate(ROUTES.CLIENT_ASSISTANT)}
+              style={styles.menuDrawerItem}
+              testID="drawer-item-client-assistant"
+            />
+            <Drawer.Item
               label={l10n.components.sidebarContent.menuItems.benchmark}
               icon={() => <BenchmarkIcon stroke={theme.colors.primary} />}
               onPress={() => props.navigation.navigate(ROUTES.BENCHMARK)}
