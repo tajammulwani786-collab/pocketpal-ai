@@ -29,6 +29,7 @@ import {resolveHFModelForDownload} from '../utils/hfResolve';
 import {palsHubService} from '../services';
 import {registerDefaultTalents} from '../services/talents';
 import {LOOKIE_DEFAULT_MODEL} from './builtinPalModels';
+import {MOOSA_PAL_MODULES} from './moosaModules';
 import {chatTemplates} from '../utils/chat';
 import {defaultCompletionParams} from '../utils/completionSettingsVersions';
 import {parsePalsHubTemplate} from '../utils/palshub-template-parser';
@@ -53,28 +54,6 @@ import {downloadPalThumbnail, deletePalThumbnail} from '../utils/imageUtils';
 const LOOKIE_SEEDED_KEY = 'PalStore.builtin.Lookie.seeded';
 const PIP_SEEDED_KEY = 'PalStore.builtin.Pip.seeded';
 const MOOSA_SEEDED_KEY = 'PalStore.builtin.Moosa.seeded';
-
-const MOOSA_SYSTEM_PROMPT = `You are MOOSA, a personal AI assistant and mentor who lives on Tajamul's phone and works fully offline. You are NOT Gemini, ChatGPT or Claude. Never claim to be them, and never claim to have real-life human experience.
-
-Tajamul is a 12th-pass student from India. He has only this Android phone, no laptop, no coding knowledge and zero budget. Always keep this in mind. Never suggest paid tools first.
-
-Language: Reply in the language he uses. If he writes Roman Urdu or Hinglish, reply in simple Roman Urdu/Hinglish with short sentences. If he writes English, reply in simple English. When teaching English, give meanings of hard words in Roman Urdu.
-
-Behave as his mentor, advisor and teacher:
-1. Understand his situation first. For any decision, compare options: good points, bad points, cost, risk and long-term benefit. Then give ONE clear recommendation. If information is missing, ask one question.
-2. Be honest, not pleasing. If his idea is wrong, risky, unrealistic or can waste money, tell him respectfully and explain why. Never agree just to make him happy.
-3. Teach like a patient teacher: explain WHY first, then HOW, with one small example and one tiny practice task. For any setup, give one step at a time.
-4. Help him with English learning, digital marketing, Fiverr freelancing, Shopify, e-commerce and dropshipping: practical guidance fitted to his phone-only, zero-budget situation.
-5. Be a friendly companion: help him plan his day, set priorities and stay disciplined, without giving needless advice.
-
-You have no internet and no live data. Never invent prices, news or facts. If something needs live internet, say so clearly and tell him to ask in the Muse chat. Never claim to have permanent memory: you only know what he writes or pastes in this chat. Never claim you can browse websites, open apps or control his phone.
-
-Trading and markets: teach and explain only, always warn about risk, paper practice first. Never tell him to buy or sell anything real, and never promise profit.
-
-Never ask for passwords, OTPs, PINs, API keys or bank details.
-
-Keep answers short, under 150 words, unless he asks for detail.`;
-
 interface CreatorUpdateContext {
   fresh: Pal;
   current: Pal;
@@ -184,8 +163,8 @@ class PalStore {
       // Initialize Pip pal (idempotent — see initializePipPal).
       await this.initializePipPal();
 
-      // Initialize Moosa pal (idempotent — see initializeMoosaPal).
-      await this.initializeMoosaPal();
+      // Initialize Moosa pals (idempotent — see initializeMoosaPals).
+      await this.initializeMoosaPals();
 
       // Register talent engines (idempotent)
       registerDefaultTalents();
@@ -933,54 +912,56 @@ class PalStore {
   }
 
   /**
-   * Seed the built-in "Moosa" pal once (the MOOSA identity of this app).
-   * Idempotent: an existing local pal named "Moosa" is never overwritten,
-   * so user edits after the first seed are preserved.
+   * Seed the built-in MOOSA capability pals once, from the module
+   * registry in moosaModules.ts. Idempotent per module: an existing
+   * local pal with the module's name is never overwritten, so user
+   * edits and deletions after the first seed are preserved.
    */
-  private async initializeMoosaPal(): Promise<void> {
-    try {
-      if ((await AsyncStorage.getItem(MOOSA_SEEDED_KEY)) === 'true') {
-        return;
+  private async initializeMoosaPals(): Promise<void> {
+    for (const mod of MOOSA_PAL_MODULES) {
+      try {
+        if ((await AsyncStorage.getItem(mod.seededKey)) === 'true') {
+          continue;
+        }
+
+        const existing = this.pals.find(
+          p => p.name === mod.name && p.source === 'local',
+        );
+        if (existing) {
+          await AsyncStorage.setItem(mod.seededKey, 'true');
+          continue;
+        }
+
+        const palData: Omit<Pal, 'id' | 'created_at' | 'updated_at'> = {
+          type: 'local',
+          name: mod.name,
+          description: mod.description,
+          systemPrompt: mod.systemPrompt,
+          isSystemPromptChanged: false,
+          useAIPrompt: false,
+          defaultModel: undefined,
+          parameters: {},
+          parameterSchema: [],
+          capabilities: {},
+          color: mod.color,
+          source: 'local',
+          greeting: {
+            text: mod.greetingText,
+            suggestedPrompts: mod.suggestedPrompts,
+          },
+        };
+
+        await this.addPal(palData);
+        await AsyncStorage.setItem(mod.seededKey, 'true');
+      } catch (error) {
+        console.error(
+          `Error initializing Moosa pal module ${mod.key}:`,
+          error,
+        );
       }
-
-      const existing = this.pals.find(
-        p => p.name === 'Moosa' && p.source === 'local',
-      );
-      if (existing) {
-        await AsyncStorage.setItem(MOOSA_SEEDED_KEY, 'true');
-        return;
-      }
-
-      const palData: Omit<Pal, 'id' | 'created_at' | 'updated_at'> = {
-        type: 'local',
-        name: 'Moosa',
-        description:
-          'My personal AI assistant, mentor and teacher. Helps with English, digital marketing, freelancing, e-commerce and market learning. Works fully offline on my phone.',
-        systemPrompt: MOOSA_SYSTEM_PROMPT,
-        isSystemPromptChanged: false,
-        useAIPrompt: false,
-        defaultModel: undefined,
-        parameters: {},
-        parameterSchema: [],
-        capabilities: {},
-        color: ['#141414', '#D4AF37'],
-        source: 'local',
-        greeting: {
-          text: 'Assalam o Alaikum Tajamul, main MOOSA hoon - tumhara personal assistant aur mentor. Main tumhari English, digital marketing, freelancing aur business seekhne mein madad karunga. Batao, aaj hum kya seekhenge ya kya kaam karenge?',
-          suggestedPrompts: [
-            'Mujhe English sikhao',
-            'Digital marketing kya hoti hai?',
-            'Fiverr par pehla client kaise milega?',
-          ],
-        },
-      };
-
-      await this.addPal(palData);
-      await AsyncStorage.setItem(MOOSA_SEEDED_KEY, 'true');
-    } catch (error) {
-      console.error('Error initializing Moosa pal:', error);
     }
   }
+
 }
 
 export const palStore = new PalStore();
