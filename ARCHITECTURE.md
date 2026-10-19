@@ -124,3 +124,31 @@ labelled partial or planned.
 | Fiverr/Shopify live workflows | Partial (offline drafting; live work via assistant in chat, disclosed) |
 | Trading | Education/paper only, by design |
 | Encrypted backup / multi-device | Planned (repo is the current backup of code/config) |
+
+## Hybrid operation (added 2026-10-19, owner's final decision)
+
+MOOSA is a **hybrid** agent: local-first brain, online tools when the
+internet is available.
+
+- **The brain never moves.** Reasoning and conversation always run on
+  the local GGUF model. The system never switches to a cloud AI model
+  (ChatGPT, Claude, Gemini or any other) without the owner's explicit
+  permission. No code path in this project does so.
+- **Offline mode (no internet):** local models, offline Talent
+  engines (Calculator, Date & Time), on-device TTS, and the local
+  database/memory keep working. Nothing about the core assistant
+  depends on a connection.
+- **Online tools (internet available):** the codebase already contains
+  internet Talent engines (Web Search, Read URL) behind the Talent
+  registry. MOOSA policy: they stay OFF until the owner explicitly
+  enables them with their own provider key, because they send queries
+  to an external service. Enabling them is a settings decision by the
+  owner, never a silent default.
+- **Actions with side effects** (sending messages, publishing,
+  purchases, deletions, trades) require the owner's explicit approval
+  in all modes. Approved autonomous missions (Mission Mode) remain
+  PLANNED on top of the AgentRunner loop.
+- **Business work today:** offline drafting/analysis happens in the
+  app (Moosa Business). Live platform work (Fiverr, Shopify, market
+  data) is performed by the owner's assistant in chat, disclosed as
+  such, until the app's own online tools are enabled and tested.
