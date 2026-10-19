@@ -7,6 +7,7 @@ export const ROUTES = {
   BENCHMARK: 'Benchmark',
   SETTINGS: 'Settings',
   APP_INFO: 'App Info',
+  MOOSA_HOME: 'MOOSA Home',
   CLIENT_ASSISTANT: 'Client Assistant',
 
   // Dev tools route. Only available in debug mode.
